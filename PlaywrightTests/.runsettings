@@ -1,0 +1,12 @@
+<RunSettings>
+  <NUnit>
+    <!-- Run tests in parallel at the class level -->
+    <NumberOfTestWorkers>4</NumberOfTestWorkers>
+  </NUnit>
+  
+  <TestRunParameters>
+    <!-- Custom parameters that can be accessed in tests -->
+    <Parameter name="baseUrl" value="https://playwright.dev" />
+    <Parameter name="timeout" value="30000" />
+  </TestRunParameters>
+</RunSettings>
