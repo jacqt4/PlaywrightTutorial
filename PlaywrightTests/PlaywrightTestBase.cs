@@ -11,10 +11,27 @@ public class PlaywrightTestBase
     protected IBrowser? Browser { get; private set; }
     protected IBrowserContext? Context { get; private set; }
     protected IPage? Page { get; private set; }
+    
+    /// <summary>
+    /// Directory for storing screenshots. Can be configured via TestRunParameters.
+    /// </summary>
+    protected string ScreenshotDirectory { get; private set; } = "screenshots";
 
     [SetUp]
     public async Task Setup()
     {
+        // Read screenshot directory from test parameters if available
+        if (TestContext.Parameters.Exists("screenshotDirectory"))
+        {
+            ScreenshotDirectory = TestContext.Parameters["screenshotDirectory"]!;
+        }
+        
+        // Ensure screenshot directory exists
+        if (!Directory.Exists(ScreenshotDirectory))
+        {
+            Directory.CreateDirectory(ScreenshotDirectory);
+        }
+        
         // Initialize Playwright
         Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
         
@@ -66,7 +83,7 @@ public class PlaywrightTestBase
         {
             await Page.ScreenshotAsync(new() 
             { 
-                Path = $"screenshots/{TestContext.CurrentContext.Test.Name}_{name}.png" 
+                Path = Path.Combine(ScreenshotDirectory, $"{TestContext.CurrentContext.Test.Name}_{name}.png")
             });
         }
     }
