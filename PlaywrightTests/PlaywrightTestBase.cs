@@ -23,7 +23,11 @@ public class PlaywrightTestBase
         // Read screenshot directory from test parameters if available
         if (TestContext.Parameters.Exists("screenshotDirectory"))
         {
-            ScreenshotDirectory = TestContext.Parameters["screenshotDirectory"]!;
+            var paramValue = TestContext.Parameters["screenshotDirectory"];
+            if (!string.IsNullOrWhiteSpace(paramValue))
+            {
+                ScreenshotDirectory = paramValue;
+            }
         }
         
         // Ensure screenshot directory exists
