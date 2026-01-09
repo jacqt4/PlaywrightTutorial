@@ -17,6 +17,20 @@ public class PlaywrightTestBase
     /// </summary>
     protected string ScreenshotDirectory { get; private set; } = "screenshots";
 
+    /// <summary>
+    /// Directory where video recordings will be saved. Defaults to "test-videos/".
+    /// </summary>
+    protected string VideoRecordingDirectory { get; set; }
+
+    /// <summary>
+    /// Creates a new instance of PlaywrightTestBase with optional video recording directory
+    /// </summary>
+    /// <param name="videoRecordingDirectory">Directory for video recordings. Defaults to "test-videos/"</param>
+    public PlaywrightTestBase(string videoRecordingDirectory = "test-videos/")
+    {
+        VideoRecordingDirectory = videoRecordingDirectory;
+    }
+
     [SetUp]
     public async Task Setup()
     {
@@ -52,7 +66,7 @@ public class PlaywrightTestBase
             ViewportSize = new() { Width = 1280, Height = 720 },
             
             // Optional: Record video for failed tests
-            RecordVideoDir = "test-videos/",
+            RecordVideoDir = VideoRecordingDirectory,
             
             // Optional: Set user agent
             // UserAgent = "Custom User Agent"
