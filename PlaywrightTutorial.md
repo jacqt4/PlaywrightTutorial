@@ -181,6 +181,7 @@ await page.Video?.SaveAsAsync("testvideo.webm");
 ### Challenge
 Enable tracing and open the trace viewer.
 
+(this is not done yet, I have to learn about Azure DevOps first)
 ## LESSON 7 — Run Playwright in Azure Pipelines
 
 ### Goal
@@ -204,6 +205,20 @@ steps:
 
 - script: dotnet test --logger "trx"
 ```
+### To use this in Azure DevOps:
+Push the azure-pipelines.yml to your repository
+
+In Azure DevOps:
+
+- Go to Pipelines → New Pipeline
+- Select your repository
+- Choose "Existing Azure Pipelines YAML file"
+- Select azure-pipelines.yml
+- Click Run
+- View results:
+
+Test results appear in the Tests tab
+Screenshots/videos/traces are in the Artifacts section
 
 ### Challenge
 Publish Playwright HTML reports as pipeline artifacts.
