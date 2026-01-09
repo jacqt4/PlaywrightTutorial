@@ -162,4 +162,58 @@ public class DemoTest
         var finishText = await page.Locator("#finish h4").TextContentAsync();
         Assert.That(finishText, Is.EqualTo("Hello World!"));
     }
+
+    [Test]
+    public async Task ApiTest()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var request = await playwright.APIRequest.NewContextAsync();
+
+        var response = await request.GetAsync("https://api.github.com/repos/microsoft/playwright");
+        Assert.That(response.Status, Is.EqualTo(200));
+
+        var json = await response.JsonAsync();
+        Console.WriteLine(json?.GetProperty("name"));
+    }
+
+    [Test]
+    public async Task CombineApiAndUiTest()
+    {
+        using var playwright = await Playwright.CreateAsync();
+
+        // Step 1: Call the API to get repository information
+        var request = await playwright.APIRequest.NewContextAsync();
+        var response = await request.GetAsync("https://api.github.com/repos/microsoft/playwright");
+        Assert.That(response.Status, Is.EqualTo(200));
+
+        // Step 2: Extract the repository name from the API response
+        var json = await response.JsonAsync();
+        var repoFullName = json?.GetProperty("full_name").GetString();
+        var repoDescription = json?.GetProperty("description").GetString();
+
+        Console.WriteLine($"Repository: {repoFullName}");
+        Console.WriteLine($"Description: {repoDescription}");
+
+        Assert.That(repoFullName, Is.Not.Null.And.Not.Empty);
+
+        // Step 3: Use the API data in a UI test
+        var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
+        var page = await browser.NewPageAsync();
+
+        // Navigate to the GitHub repository page using the API data from the API
+        await page.GotoAsync($"https://github.com/{repoFullName}");
+
+        // Verify the page loaded correctly by checking title and URL
+        await Assertions.Expect(page).ToHaveTitleAsync(new Regex(".*playwright.*", RegexOptions.IgnoreCase));
+        await Assertions.Expect(page).ToHaveURLAsync(new Regex(".*microsoft/playwright.*"));
+
+        // Verify the page content contains the repository name
+        var pageContent = await page.ContentAsync();
+        Assert.That(pageContent, Does.Contain("playwright").IgnoreCase,
+            "Page should contain the repository name from the API");
+
+        Console.WriteLine($"✓ API returned: {repoFullName}");
+        Console.WriteLine($"✓ Successfully navigated to: {page.Url}");
+        Console.WriteLine($"✓ Page title: {await page.TitleAsync()}");
+    }
 }
