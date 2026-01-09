@@ -77,4 +77,38 @@ public class DemoTest
         Assert.That(newTitle, Is.Not.Empty, "New page should have a title");
         Assert.That(newTitle.ToLower(), Does.Not.Contain("bing"), "Should have navigated away from Bing");
     }
+
+    [Test]
+    public async Task SearchWithPageObject()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Chromium.LaunchAsync();
+        var page = await browser.NewPageAsync();
+
+        var home = new HomePage(page);
+        await page.GotoAsync("https://www.bing.com");
+        await home.Search("Playwright C#");
+    }
+
+    [Test]
+    public async Task SearchWithPageObjectAndAssertFirstResult()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
+        var page = await browser.NewPageAsync();
+
+        await page.GotoAsync("https://www.bing.com");
+
+        var homePage = new HomePage(page);
+        var resultsPage = await homePage.SearchAndWaitForResults("Playwright C#");
+
+        // Assert first result text exists
+        var firstResultText = await resultsPage.GetFirstResultText();
+        Assert.That(firstResultText, Is.Not.Empty, "First result should have text");
+        Assert.That(firstResultText.Length, Is.GreaterThan(5), "First result text should be meaningful");
+
+        // Assert we have multiple results
+        var resultsCount = await resultsPage.GetResultsCount();
+        Assert.That(resultsCount, Is.GreaterThan(0), "Should have search results");
+    }
 }
