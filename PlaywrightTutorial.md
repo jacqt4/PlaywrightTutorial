@@ -150,18 +150,18 @@ Use Playwright’s API testing capabilities.
 
 ### Example
 ```csharp
-[Test]
-public async Task ApiTest()
-{
-    using var playwright = await Playwright.CreateAsync();
-    var request = await playwright.APIRequest.NewContextAsync();
+   [Test]
+    public async Task ApiTest()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var request = await playwright.APIRequest.NewContextAsync();
 
-    var response = await request.GetAsync("https://api.github.com/repos/microsoft/playwright");
-    Assert.AreEqual(200, response.Status);
+        var response = await request.GetAsync("https://api.github.com/repos/microsoft/playwright");
+        Assert.That(response.Status, Is.EqualTo(200));
 
-    var json = await response.JsonAsync();
-    Console.WriteLine(json?.GetProperty("name"));
-}
+        var json = await response.JsonAsync();
+        Console.WriteLine(json?.GetProperty("name"));
+    }
 ```
 
 ### Challenge
