@@ -8,5 +8,6 @@
     <!-- Custom parameters that can be accessed in tests -->
     <Parameter name="baseUrl" value="https://playwright.dev" />
     <Parameter name="timeout" value="30000" />
+    <Parameter name="screenshotDirectory" value="screenshots" />
   </TestRunParameters>
 </RunSettings>

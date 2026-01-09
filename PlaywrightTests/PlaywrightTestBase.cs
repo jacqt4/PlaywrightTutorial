@@ -22,6 +22,22 @@ public class PlaywrightTestBase
     [SetUp]
     public async Task Setup()
     {
+        // Read screenshot directory from test parameters if available
+        if (TestContext.Parameters.Exists("screenshotDirectory"))
+        {
+            var paramValue = TestContext.Parameters["screenshotDirectory"];
+            if (!string.IsNullOrWhiteSpace(paramValue))
+            {
+                ScreenshotDirectory = paramValue;
+            }
+        }
+        
+        // Ensure screenshot directory exists
+        if (!Directory.Exists(ScreenshotDirectory))
+        {
+            Directory.CreateDirectory(ScreenshotDirectory);
+        }
+        
         // Initialize Playwright
         Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
         
@@ -38,7 +54,7 @@ public class PlaywrightTestBase
             ViewportSize = new() { Width = 1280, Height = 720 },
             
             // Optional: Record video for failed tests
-            RecordVideoDir = "test-videos/",
+            RecordVideoDir = VideoRecordingDirectory,
             
             // Optional: Set user agent
             // UserAgent = "Custom User Agent"
