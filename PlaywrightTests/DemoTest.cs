@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using NUnit.Framework;
+using System.Text.RegularExpressions;
 
 public class DemoTest
 {
@@ -110,5 +111,55 @@ public class DemoTest
         // Assert we have multiple results
         var resultsCount = await resultsPage.GetResultsCount();
         Assert.That(resultsCount, Is.GreaterThan(0), "Should have search results");
+    }
+
+    [Test]
+    public async Task LoginWithPlaywrightAssertions()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
+        var page = await browser.NewPageAsync();
+
+        // Navigate to login demo page
+        await page.GotoAsync("https://the-internet.herokuapp.com/login");
+
+        // Fill in credentials using semantic locators
+        await page.GetByLabel("Username").FillAsync("tomsmith");
+        await page.GetByLabel("Password").FillAsync("SuperSecretPassword!");
+
+        // Click login button using role-based locator
+        await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
+
+        // Use Playwright's built-in assertion with auto-waiting
+        await Assertions.Expect(page.Locator("#flash")).ToBeVisibleAsync();
+        await Assertions.Expect(page.Locator("#flash")).ToContainTextAsync("You logged into a secure area!");
+
+        // Verify we're on the secure page
+        await Assertions.Expect(page).ToHaveURLAsync(new Regex(".*/secure$"));
+    }
+
+    [Test]
+    public async Task WaitForDynamicElement()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
+        var page = await browser.NewPageAsync();
+
+        // Navigate to a page with dynamically loaded content
+        await page.GotoAsync("https://the-internet.herokuapp.com/dynamic_loading/1");
+
+        // Click the Start button to trigger dynamic loading
+        await page.GetByRole(AriaRole.Button, new() { Name = "Start" }).ClickAsync();
+
+        // Playwright automatically waits for the element to be visible (up to timeout)
+        // This element appears after a 5 second delay, so we need a longer timeout
+        await Assertions.Expect(page.Locator("#finish")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Assertions.Expect(page.Locator("#finish h4")).ToHaveTextAsync("Hello World!");
+
+        // Alternative: You can also use explicit wait
+        await page.Locator("#finish").WaitForAsync(new() { State = WaitForSelectorState.Visible });
+
+        var finishText = await page.Locator("#finish h4").TextContentAsync();
+        Assert.That(finishText, Is.EqualTo("Hello World!"));
     }
 }
