@@ -11,6 +11,12 @@ public class PlaywrightTestBase
     protected IBrowser? Browser { get; private set; }
     protected IBrowserContext? Context { get; private set; }
     protected IPage? Page { get; private set; }
+    
+    /// <summary>
+    /// Directory path for saving screenshots. Defaults to "screenshots/"
+    /// Override this property in derived classes to customize the location
+    /// </summary>
+    protected virtual string ScreenshotDirectory { get; set; } = "screenshots/";
 
     [SetUp]
     public async Task Setup()
@@ -64,9 +70,12 @@ public class PlaywrightTestBase
     {
         if (Page != null)
         {
+            // Ensure the screenshot directory exists
+            Directory.CreateDirectory(ScreenshotDirectory);
+            
             await Page.ScreenshotAsync(new() 
             { 
-                Path = $"screenshots/{TestContext.CurrentContext.Test.Name}_{name}.png" 
+                Path = Path.Combine(ScreenshotDirectory, $"{TestContext.CurrentContext.Test.Name}_{name}.png")
             });
         }
     }
