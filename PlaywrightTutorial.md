@@ -1,6 +1,6 @@
 # Playwright Learning Plan (C# Edition)
 
-A 7-lesson, hands on learning plan focused on practical examples rather than heavy reading. Designed for C# developers who want to learn Playwright by doing.
+A 7-lesson, hands on learning plan focused on practical examples rather than heavy reading. Designed for C# developers who want to learn Playwright by doing. Please note that after I created the code, I went back and forth with Copilot on perfecting it. Thus, the actual code will not always match exactly what is in this tutorial.
 
 ## LESSON 1 — Install Playwright + Run Your First Test
 
@@ -222,5 +222,118 @@ Screenshots/videos/traces are in the Artifacts section
 
 ### Challenge
 Publish Playwright HTML reports as pipeline artifacts.
+## BONUS — Clean Test Structure with Base Classes
 
+### Goal
+Eliminate repetitive setup code and make tests cleaner and more maintainable.
+
+### The Problem
+Every test requires the same boilerplate:
+```csharp
+using var playwright = await Playwright.CreateAsync();
+var browser = await playwright.Chromium.LaunchAsync(...);
+var page = await browser.NewPageAsync();
+// actual test code
+```
+
+### The Solution: PlaywrightTestBase
+
+Create a base class that handles setup and teardown:
+
+**PlaywrightTestBase.cs**
+```csharp
+using Microsoft.Playwright;
+using NUnit.Framework;
+
+public class PlaywrightTestBase
+{
+    protected IPlaywright? Playwright { get; private set; }
+    protected IBrowser? Browser { get; private set; }
+    protected IPage? Page { get; private set; }
+
+    [SetUp]
+    public async Task Setup()
+    {
+        Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+        Browser = await Playwright.Chromium.LaunchAsync(new() { Headless = false });
+        Page = await Browser.NewPageAsync();
+    }
+
+    [TearDown]
+    public async Task Teardown()
+    {
+        if (Page != null) await Page.CloseAsync();
+        if (Browser != null) await Browser.CloseAsync();
+        Playwright?.Dispose();
+    }
+}
+```
+
+### Usage Example
+
+**CleanTests.cs**
+```csharp
+public class CleanTests : PlaywrightTestBase
+{
+    [Test]
+    public async Task NavigateToPlaywright()
+    {
+        // No setup needed - Page is already available!
+        await Page!.GotoAsync("https://playwright.dev");
+        await Assertions.Expect(Page).ToHaveTitleAsync(new Regex("Playwright"));
+    }
+
+    [Test]
+    public async Task SearchFunctionality()
+    {
+        await Page!.GotoAsync("https://playwright.dev");
+        await Page.GetByRole(AriaRole.Button, new() { Name = "Search" }).ClickAsync();
+        await Page.GetByPlaceholder("Search docs").FillAsync("test");
+        
+        await Assertions.Expect(Page.GetByPlaceholder("Search docs"))
+            .ToHaveValueAsync("test");
+    }
+}
+```
+
+### Benefits
+- ✓ Less boilerplate code
+- ✓ Tests are easier to read and write
+- ✓ Consistent setup/teardown across all tests
+- ✓ Easy to add common utilities (screenshots, logging, etc.)
+- ✓ Better for scaling test suites
+
+### Challenge
+Add a helper method to the base class for taking screenshots with test names.
+
+## BONUS — Parallel Test Execution
+
+### Goal
+Speed up test execution by running tests in parallel.
+
+### Configuration
+
+Create `.runsettings` file:
+```xml
+<RunSettings>
+  <NUnit>
+    <NumberOfTestWorkers>4</NumberOfTestWorkers>
+  </NUnit>
+</RunSettings>
+```
+
+### Usage
+```powershell
+dotnet test --settings PlaywrightTests/.runsettings
+```
+
+### Benefits
+- ✓ 4x faster test execution (with 4 workers)
+- ✓ Better resource utilization
+- ✓ Essential for large test suites
+
+### Important Notes
+- Each test gets its own browser instance (already isolated)
+- Tests must be independent (no shared state)
+- Great for CI/CD pipelines
 ## This plan provides a practical, example driven path to learning Playwright with C#, focusing on real tasks rather than heavy documentation.

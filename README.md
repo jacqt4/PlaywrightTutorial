@@ -4,8 +4,11 @@ learning Playwright as we go
 ## Project Structure
 - `PlaywrightTests/` - NUnit test project with Playwright tests
   - `DemoTest.cs` - Comprehensive Playwright test examples
+  - `CleanTests.cs` - Clean tests using base class
+  - `PlaywrightTestBase.cs` - Base test class with setup/teardown
   - `HomePage.cs` - Page Object Model example
   - `ResultsPage.cs` - Page Object Model example
+  - `.runsettings` - NUnit configuration for parallel execution
   - `PlaywrightTests.csproj` - Test project configuration
 - `azure-pipelines.yml` - Azure DevOps CI/CD configuration
 - `PlaywrightTutorial.md` - 7-lesson learning guide
