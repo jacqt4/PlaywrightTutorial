@@ -26,7 +26,32 @@ pwsh ./bin/Debug/net10.0/playwright.ps1 install
 using Microsoft.Playwright; 
 using NUnit.Framework;
 
-public class DemoTest { [Test] public async Task OpenGoogle() { using var playwright = await Playwright.CreateAsync(); var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false }); var page = await browser.NewPageAsync(); await page.GotoAsync("https://www.google.com"); Assert.That(await page.TitleAsync(), Does.Contain("Google")); } }
+    [Test]
+    public async Task OpenGoogle()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
+        var page = await browser.NewPageAsync();
+        await page.GotoAsync("https://www.google.com");
+        Assert.That(await page.TitleAsync(), Does.Contain("Google"));
+    }
+    
+    [Test]
+    public async Task SearchGoogle()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
+        var page = await browser.NewPageAsync();
+        await page.GotoAsync("https://www.google.com");
+
+        // Search for a term
+        await page.Locator("textarea[name='q']").FillAsync("Playwright testing");
+        await page.Keyboard.PressAsync("Enter");
+
+        // Wait for and assert search results appear
+        await page.Locator("#search").WaitForAsync();
+        Assert.That(await page.Locator("#search").IsVisibleAsync(), Is.True);
+    }
 ```
 
 ### Challenge
@@ -39,20 +64,26 @@ Learn how to click, type, and assert elements.
 
 ### Example
 ```csharp
-[Test]
-public async Task SearchBing()
-{
-    using var playwright = await Playwright.CreateAsync();
-    var browser = await playwright.Chromium.LaunchAsync();
-    var page = await browser.NewPageAsync();
+    [Test]
+    public async Task SearchBing()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Chromium.LaunchAsync();
+        var page = await browser.NewPageAsync();
 
-    await page.GotoAsync("https://www.bing.com");
-    await page.Locator("input[name='q']").FillAsync("Playwright C#");
-    await page.Keyboard.PressAsync("Enter");
+        await page.GotoAsync("https://www.bing.com");
+        await page.Locator("input[name='q']").FillAsync("Playwright C#");
+        await page.Keyboard.PressAsync("Enter");
 
-    await page.Locator("#b_results").WaitForAsync();
-    Assert.IsTrue(await page.Locator("#b_results").IsVisibleAsync());
-}
+        // Wait for URL to change (indicating search happened)
+        // This is more reliable because Bing's page structure uses 
+        // hidden elements that Playwright's visibility checks don't handle well.
+        await page.WaitForURLAsync("**/search?**");
+
+        // Check that we have search results
+        var hasResults = await page.Locator("#b_results li").CountAsync() > 0;
+        Assert.That(hasResults, Is.True, "Search results should be present");
+    }
 ```
 
 ### Challenge
