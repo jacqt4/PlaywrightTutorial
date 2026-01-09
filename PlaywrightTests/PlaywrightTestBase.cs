@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using NUnit.Framework;
+using System.IO;
 
 /// <summary>
 /// Base class for Playwright tests with common setup and teardown
@@ -16,7 +17,7 @@ public class PlaywrightTestBase
     /// Directory path for saving screenshots. Defaults to "screenshots/"
     /// Override this property in derived classes to customize the location
     /// </summary>
-    protected virtual string ScreenshotDirectory { get; set; } = "screenshots/";
+    protected virtual string ScreenshotDirectory { get; } = "screenshots/";
 
     [SetUp]
     public async Task Setup()
