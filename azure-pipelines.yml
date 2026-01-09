@@ -1,0 +1,78 @@
+# Azure Pipeline for Playwright Tests
+# This pipeline builds and runs Playwright tests on Windows
+
+trigger:
+  branches:
+    include:
+    - main
+    - master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+# Install .NET SDK
+- task: UseDotNet@2
+  displayName: 'Install .NET SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '10.x'
+
+# Restore NuGet packages
+- script: dotnet restore
+  displayName: 'Restore dependencies'
+
+# Build the solution
+- script: dotnet build --configuration $(buildConfiguration) --no-restore
+  displayName: 'Build solution'
+
+# Install Playwright browsers
+- pwsh: |
+    cd PlaywrightTests/bin/$(buildConfiguration)/net10.0
+    ./playwright.ps1 install --with-deps
+  displayName: 'Install Playwright browsers'
+
+# Run tests
+- script: dotnet test --configuration $(buildConfiguration) --no-build --logger "trx" --results-directory $(Agent.TempDirectory)
+  displayName: 'Run Playwright tests'
+  continueOnError: true
+
+# Publish test results
+- task: PublishTestResults@2
+  displayName: 'Publish test results'
+  inputs:
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '**/*.trx'
+    searchFolder: '$(Agent.TempDirectory)'
+    mergeTestResults: true
+    failTaskOnFailedTests: true
+    testRunTitle: 'Playwright Tests'
+
+# Publish screenshots and videos as artifacts
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish screenshots'
+  condition: always()
+  inputs:
+    targetPath: '$(System.DefaultWorkingDirectory)/PlaywrightTests/bin/$(buildConfiguration)/net10.0'
+    artifact: 'playwright-artifacts'
+    publishLocation: 'pipeline'
+
+# Optional: Publish trace files if they exist
+- pwsh: |
+    if (Test-Path "PlaywrightTests/bin/$(buildConfiguration)/net10.0/trace.zip") {
+      Write-Host "Trace file found"
+      Copy-Item "PlaywrightTests/bin/$(buildConfiguration)/net10.0/trace.zip" "$(Build.ArtifactStagingDirectory)/"
+    }
+  displayName: 'Copy trace files'
+  condition: always()
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish trace files'
+  condition: always()
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    artifact: 'playwright-traces'
+    publishLocation: 'pipeline'
