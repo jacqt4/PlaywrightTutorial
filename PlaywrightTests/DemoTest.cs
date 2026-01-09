@@ -216,4 +216,102 @@ public class DemoTest
         Console.WriteLine($"✓ Successfully navigated to: {page.Url}");
         Console.WriteLine($"✓ Page title: {await page.TitleAsync()}");
     }
+
+    [Test]
+    public async Task CaptureScreenshotsAndVideo()
+    {
+        using var playwright = await Playwright.CreateAsync();
+
+        // Enable video recording when launching browser
+        var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
+
+        // Create context with video recording enabled
+        var context = await browser.NewContextAsync(new()
+        {
+            RecordVideoDir = "videos/",
+            RecordVideoSize = new() { Width = 1280, Height = 720 }
+        });
+
+        var page = await context.NewPageAsync();
+
+        // Navigate to a page
+        await page.GotoAsync("https://playwright.dev");
+
+        // Take a full page screenshot
+        await page.ScreenshotAsync(new() { Path = "homepage.png", FullPage = true });
+        Console.WriteLine("✓ Screenshot saved to: homepage.png");
+
+        // Perform some actions
+        await page.GetByRole(AriaRole.Link, new() { Name = "Get started" }).First.ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+
+        // Take another screenshot after navigation
+        await page.ScreenshotAsync(new() { Path = "get-started.png" });
+        Console.WriteLine("✓ Screenshot saved to: get-started.png");
+
+        // Close the page and context to finalize video
+        await page.CloseAsync();
+
+        // Save the video
+        var video = page.Video;
+        if (video != null)
+        {
+            var videoPath = await video.PathAsync();
+            Console.WriteLine($"✓ Video recording saved to: {videoPath}");
+
+            // Optionally save to a specific location
+            await video.SaveAsAsync("testvideo.webm");
+            Console.WriteLine("✓ Video also saved as: testvideo.webm");
+        }
+
+        await context.CloseAsync();
+    }
+
+    [Test]
+    public async Task EnableTracingAndViewTrace()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
+
+        // Create context with tracing enabled
+        var context = await browser.NewContextAsync();
+
+        // Start tracing before performing actions
+        await context.Tracing.StartAsync(new()
+        {
+            Screenshots = true,
+            Snapshots = true,
+            Sources = true
+        });
+
+        var page = await context.NewPageAsync();
+
+        // Perform test actions - these will be recorded in the trace
+        await page.GotoAsync("https://playwright.dev");
+        Console.WriteLine("✓ Navigated to Playwright.dev");
+
+        await page.GetByRole(AriaRole.Link, new() { Name = "Get started" }).First.ClickAsync();
+        Console.WriteLine("✓ Clicked 'Get started'");
+
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+
+        // Take a screenshot during the trace
+        await page.ScreenshotAsync(new() { Path = "trace-screenshot.png" });
+        Console.WriteLine("✓ Screenshot captured");
+
+        // Stop tracing and save to a file
+        await context.Tracing.StopAsync(new()
+        {
+            Path = "trace.zip"
+        });
+        Console.WriteLine("✓ Trace saved to: trace.zip");
+
+        await context.CloseAsync();
+
+        // Instructions to view the trace
+        Console.WriteLine("\n=== To view the trace ===");
+        Console.WriteLine("Run this command in your terminal:");
+        Console.WriteLine("pwsh bin/Debug/net10.0/playwright.ps1 show-trace trace.zip");
+        Console.WriteLine("\nOr upload trace.zip to: https://trace.playwright.dev");
+    }
 }
