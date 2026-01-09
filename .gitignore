@@ -48,3 +48,5 @@ TestResults/
 .playwright/
 playwright-report/
 test-results/
+screenshots/
+test-videos/

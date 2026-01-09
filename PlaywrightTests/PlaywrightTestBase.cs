@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using NUnit.Framework;
+using System.IO;
 
 /// <summary>
 /// Base class for Playwright tests with common setup and teardown
@@ -13,23 +14,10 @@ public class PlaywrightTestBase
     protected IPage? Page { get; private set; }
     
     /// <summary>
-    /// Directory for storing screenshots. Can be configured via TestRunParameters.
+    /// Directory path for saving screenshots. Defaults to "screenshots/"
+    /// Override this property in derived classes to customize the location
     /// </summary>
-    protected string ScreenshotDirectory { get; private set; } = "screenshots";
-
-    /// <summary>
-    /// Directory where video recordings will be saved. Defaults to "test-videos/".
-    /// </summary>
-    protected string VideoRecordingDirectory { get; set; }
-
-    /// <summary>
-    /// Creates a new instance of PlaywrightTestBase with optional video recording directory
-    /// </summary>
-    /// <param name="videoRecordingDirectory">Directory for video recordings. Defaults to "test-videos/"</param>
-    public PlaywrightTestBase(string videoRecordingDirectory = "test-videos/")
-    {
-        VideoRecordingDirectory = videoRecordingDirectory;
-    }
+    protected virtual string ScreenshotDirectory { get; } = "screenshots/";
 
     [SetUp]
     public async Task Setup()
@@ -99,6 +87,9 @@ public class PlaywrightTestBase
     {
         if (Page != null)
         {
+            // Ensure the screenshot directory exists
+            Directory.CreateDirectory(ScreenshotDirectory);
+            
             await Page.ScreenshotAsync(new() 
             { 
                 Path = Path.Combine(ScreenshotDirectory, $"{TestContext.CurrentContext.Test.Name}_{name}.png")
