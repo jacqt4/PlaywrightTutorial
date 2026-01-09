@@ -95,9 +95,8 @@ Click the first result and assert the new page title.
 Organize tests using the Page Object Model.
 
 ### Example
-```csharp
 HomePage.cs
-
+```csharp
 public class HomePage
 {
     private readonly IPage _page;
@@ -110,9 +109,10 @@ public class HomePage
         await _page.Keyboard.PressAsync("Enter");
     }
 }
+```
 
-Test
-
+DemoTest.cs
+```csharp
 [Test]
 public async Task SearchWithPageObject()
 {
