@@ -1,0 +1,49 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    
+    - name: Install Playwright browsers
+      run: pwsh PlaywrightTests/bin/Release/net10.0/playwright.ps1 install --with-deps
+    
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --logger "trx" --results-directory TestResults
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: TestResults/**/*.trx
+    
+    - name: Upload artifacts (screenshots, videos, traces)
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-artifacts
+        path: |
+          PlaywrightTests/bin/Release/net10.0/screenshots/
+          PlaywrightTests/bin/Release/net10.0/videos/
+          PlaywrightTests/bin/Release/net10.0/test-videos/
