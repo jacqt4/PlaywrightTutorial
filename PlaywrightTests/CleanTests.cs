@@ -4,7 +4,7 @@ using NUnit.Framework;
 /// <summary>
 /// Example tests using the PlaywrightTestBase for cleaner test code
 /// </summary>
-public class CleanTests : PlaywrightTestBase
+public partial class CleanTests : PlaywrightTestBase
 {
     [Test]
     public async Task Example_NavigateToPlaywright()
@@ -12,7 +12,7 @@ public class CleanTests : PlaywrightTestBase
         // No need to create playwright, browser, or page - it's done in Setup
         await Page!.GotoAsync("https://playwright.dev");
 
-        await Assertions.Expect(Page).ToHaveTitleAsync(new System.Text.RegularExpressions.Regex("Playwright"));
+        await Assertions.Expect(Page).ToHaveTitleAsync(MyRegex());
 
         // Take a screenshot using the helper method
         await TakeScreenshot("homepage");
@@ -37,10 +37,15 @@ public class CleanTests : PlaywrightTestBase
         await Page!.GotoAsync("https://playwright.dev");
 
         // Multiple assertions using Playwright's assertion library
-        await Assertions.Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*playwright.*"));
+        await Assertions.Expect(Page).ToHaveURLAsync(MyRegex1());
         await Assertions.Expect(Page.Locator("text=Get started").First).ToBeVisibleAsync();
 
         var title = await Page.TitleAsync();
         Assert.That(title, Does.Contain("Playwright"));
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex("Playwright")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex();
+    [System.Text.RegularExpressions.GeneratedRegex(".*playwright.*")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex1();
 }

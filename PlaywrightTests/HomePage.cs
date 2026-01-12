@@ -1,10 +1,8 @@
 using Microsoft.Playwright;
 
-public class HomePage
+public class HomePage(IPage page)
 {
-    private readonly IPage _page;
-
-    public HomePage(IPage page) => _page = page;
+    private readonly IPage _page = page;
 
     public ILocator SearchBox => _page.Locator("input[name='q']");
 

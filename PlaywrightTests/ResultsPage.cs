@@ -1,10 +1,8 @@
 using Microsoft.Playwright;
 
-public class ResultsPage
+public class ResultsPage(IPage page)
 {
-    private readonly IPage _page;
-
-    public ResultsPage(IPage page) => _page = page;
+    private readonly IPage _page = page;
 
     public ILocator ResultsList => _page.Locator("#b_results");
 
