@@ -2,7 +2,7 @@ using Microsoft.Playwright;
 using NUnit.Framework;
 using System.Text.RegularExpressions;
 
-public class DemoTest
+public partial class DemoTest
 {
     [Test]
     [Category("LocalOnly")]
@@ -112,7 +112,7 @@ public class DemoTest
         // Assert first result text exists
         var firstResultText = await resultsPage.GetFirstResultText();
         Assert.That(firstResultText, Is.Not.Empty, "First result should have text");
-        Assert.That(firstResultText.Length, Is.GreaterThan(5), "First result text should be meaningful");
+        Assert.That(firstResultText, Has.Length.GreaterThan(5), "First result text should be meaningful");
 
         // Assert we have multiple results
         var resultsCount = await resultsPage.GetResultsCount();
@@ -141,7 +141,7 @@ public class DemoTest
         await Assertions.Expect(page.Locator("#flash")).ToContainTextAsync("You logged into a secure area!");
 
         // Verify we're on the secure page
-        await Assertions.Expect(page).ToHaveURLAsync(new Regex(".*/secure$"));
+        await Assertions.Expect(page).ToHaveURLAsync(MyRegex());
     }
 
     [Test]
@@ -210,7 +210,7 @@ public class DemoTest
         await page.GotoAsync($"https://github.com/{repoFullName}");
 
         // Verify the page loaded correctly by checking title and URL
-        await Assertions.Expect(page).ToHaveTitleAsync(new Regex(".*playwright.*", RegexOptions.IgnoreCase));
+        await Assertions.Expect(page).ToHaveTitleAsync(MyRegex1());
         await Assertions.Expect(page).ToHaveURLAsync(new Regex(".*microsoft/playwright.*"));
 
         // Verify the page content contains the repository name
@@ -320,4 +320,9 @@ public class DemoTest
         Console.WriteLine("pwsh bin/Debug/net10.0/playwright.ps1 show-trace trace.zip");
         Console.WriteLine("\nOr upload trace.zip to: https://trace.playwright.dev");
     }
+
+    [GeneratedRegex(".*/secure$")]
+    private static partial Regex MyRegex();
+    [GeneratedRegex(".*playwright.*", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex MyRegex1();
 }

@@ -181,7 +181,6 @@ await page.Video?.SaveAsAsync("testvideo.webm");
 ### Challenge
 Enable tracing and open the trace viewer.
 
-(this is not done yet, I have to learn about Azure DevOps first)
 ## LESSON 7 — Run Playwright in Azure Pipelines
 
 ### Goal
