@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 public class DemoTest
 {
     [Test]
+    [Category("LocalOnly")]
     public async Task OpenGoogle()
     {
         using var playwright = await Playwright.CreateAsync();
@@ -15,6 +16,7 @@ public class DemoTest
     }
 
     [Test]
+    [Category("LocalOnly")]
     public async Task SearchGoogle()
     {
         using var playwright = await Playwright.CreateAsync();
@@ -32,6 +34,7 @@ public class DemoTest
     }
 
     [Test]
+    [Category("LocalOnly")]
     public async Task SearchBing()
     {
         using var playwright = await Playwright.CreateAsync();
@@ -53,6 +56,7 @@ public class DemoTest
     }
 
     [Test]
+    [Category("LocalOnly")]
     public async Task SearchBingAndClickFirstResult()
     {
         using var playwright = await Playwright.CreateAsync();
@@ -80,6 +84,7 @@ public class DemoTest
     }
 
     [Test]
+    [Category("LocalOnly")]
     public async Task SearchWithPageObject()
     {
         using var playwright = await Playwright.CreateAsync();
@@ -92,6 +97,7 @@ public class DemoTest
     }
 
     [Test]
+    [Category("LocalOnly")]
     public async Task SearchWithPageObjectAndAssertFirstResult()
     {
         using var playwright = await Playwright.CreateAsync();
